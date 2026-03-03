@@ -2,28 +2,14 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
+const rateLimiter = require("../middlewares/rateLimiter");
 
 
 router.post("/register", authController.register);
-router.post("/login", authController.login);
+router.post("/login", rateLimiter, authController.login);
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
-// router.post("/refresh-token", authController.refreshToken);
+router.post("/refresh-token", authController.refreshToken);
+router.post("/logout", authController.logout);
 
 module.exports = router;
-
-
-
-// const express = require("express");
-// const router = express.Router();
-
-// const authController = require("../controllers/authController");
-
-// // 🔴 EVERY handler below MUST exist and be a function
-// router.post("/register", authController.register);
-// router.post("/login", authController.login);
-// // router.post("/forgot-password", authController.forgotPassword);
-// router.post("/reset-password", authController.resetPassword);
-// // router.post("/refresh-token", authController.refreshToken);
-
-// module.exports = router;
