@@ -6,14 +6,20 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Register a new user
   const register = async (req, res) => {
-  const { fullname, email, password, confirm_password } = req.body;
+  const { fullname, email, password, confirm_password, accept_terms } = req.body;
 
   if (!fullname || !email || !password || !confirm_password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
+  // Validate password format
   if (password !== confirm_password) {
     return res.status(400).json({ message: "Passwords do not match" });
+  }
+
+  //add validation for accepted_terms
+  if (!accept_terms) {
+    return res.status(400).json({ message: "You must accept the terms and conditions" });
   }
 
   try {
@@ -33,8 +39,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Create user
     const newUser = await pool.query(
-      "INSERT INTO users (fullname, email, password) VALUES ($1, $2, $3) RETURNING id, fullname, email",
-      [fullname, email, hashedPassword]
+      "INSERT INTO users (fullname, email, password, accept_terms) VALUES ($1, $2, $3, $4) RETURNING id, fullname, email",
+      [fullname, email, hashedPassword, accept_terms]
     );
 
     const userId = newUser.rows[0].id;

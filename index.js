@@ -4,13 +4,28 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Planwise backend is running");
 });
+
+app.use(
+   cors({
+     origin: "http://localhost:3000", // frontend URL
+     credentials: true, // allow cookies/headers if needed
+   })
+ );
+
+//  app.use(
+//    cors({
+//      origin: "http://localhost:3000", // frontend URL
+//      credentials: true, // allow cookies/headers if needed
+//    })
+//  );
+
 
 const authRoutes = require('./src/routes/auth');
 
