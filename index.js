@@ -28,8 +28,10 @@ app.use(
 
 
 const authRoutes = require('./src/routes/auth');
+const taskRoutes = require('./src/routes/task');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/task', taskRoutes);
 
 
 const PORT = process.env.PORT || 5000;
