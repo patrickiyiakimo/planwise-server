@@ -86,65 +86,81 @@ const resend = new Resend(process.env.RESEND_API_KEY);
   }
 };
 
-// Login a user
+// Login user with remember me functionality
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember_me } = req.body;
 
+  // Validate required fields
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
+    // Check if user exists
     const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-
+    
     if (user.rows.length === 0) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "User do not exist" });
     }
 
+    // Verify password
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
-
     if (!validPassword) {
-      return res.status(400).json({ message: "Incorrect email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    // Set expiration times based on remember_me
+    const accessTokenExpiry = "15m"; // Always 15 minutes for access token
+    const refreshTokenExpiry = remember_me ? "30d" : "7d"; // 30 days if remembered, 7 days if not
+    
+    // Convert expiry to milliseconds for cookie maxAge
+    const accessTokenMaxAge = 15 * 60 * 1000; // 15 minutes in milliseconds
+    const refreshTokenMaxAge = remember_me 
+      ? 30 * 24 * 60 * 60 * 1000  // 30 days in milliseconds
+      : 7 * 24 * 60 * 60 * 1000;   // 7 days in milliseconds
 
     // Create access token (short-lived)
     const accessToken = jwt.sign(
       { id: user.rows[0].id },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN } // e.g., "15m"
+      { expiresIn: accessTokenExpiry }
     );
 
-    // Create refresh token (long-lived)
+    // Create refresh token with conditional expiration
     const refreshToken = jwt.sign(
       { id: user.rows[0].id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN } // e.g., "7d"
+      { expiresIn: refreshTokenExpiry }
     );
 
-    // Set tokens in HttpOnly cookies
+    // Set access token in HttpOnly cookie
     res.cookie("access_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      // secure: false,          // disable secure locally for testing
+      // secure: process.env.NODE_ENV === "production",
+      secure: false,       // disable secure locally for testing
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000 // 15 minutes
+      maxAge: accessTokenMaxAge
     });
 
+    // Set refresh token in HttpOnly cookie with conditional expiry
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      // secure: false,          // disable secure locally for testing
+      // secure: process.env.NODE_ENV === "production",
+      secure: false,        // disable secure locally for testing
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: refreshTokenMaxAge
     });
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user.rows[0];
 
     res.status(200).json({
       message: "User logged in successfully",
-      data: user.rows[0]
+      data: userWithoutPassword
     });
 
   } catch (err) {
-    console.error(err.message);
+    console.error("Login error:", err.message);
     res.status(500).json({ message: "Server error" });
   }
 };
