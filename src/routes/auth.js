@@ -1,4 +1,3 @@
-//create the routes for the server and use the controller functions for the register, login, forgotten password, reset password, and refresh token endpoints
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
