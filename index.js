@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 // app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({extended: true}))
 
 app.get("/", (req, res) => {
   res.send("Planwise backend is running");
@@ -29,9 +30,11 @@ app.use(
 
 const authRoutes = require('./src/routes/auth');
 const taskRoutes = require('./src/routes/task');
+const courseRoutes = require('./src/routes/course')
 
 app.use('/api/auth', authRoutes);
 app.use('/api/task', taskRoutes);
+app.use('/api/courses', courseRoutes);
 
 
 const PORT = process.env.PORT || 5000;
