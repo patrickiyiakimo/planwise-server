@@ -22,7 +22,7 @@ app.use(
 
 //  app.use(
 //    cors({
-//      origin: "http://localhost:3000", // frontend URL
+//      origin: "https://planwise-mu.vercel.app/", // frontend URL
 //      credentials: true, // allow cookies/headers if needed
 //    })
 //  );

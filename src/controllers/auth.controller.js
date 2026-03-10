@@ -136,8 +136,8 @@ const login = async (req, res) => {
     // Set access token in HttpOnly cookie
     res.cookie("access_token", accessToken, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
-      secure: false,       // disable secure locally for testing
+      secure: process.env.NODE_ENV === "production",
+      // secure: false,       // disable secure locally for testing
       sameSite: "strict",
       maxAge: accessTokenMaxAge
     });
@@ -145,8 +145,8 @@ const login = async (req, res) => {
     // Set refresh token in HttpOnly cookie with conditional expiry
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
-      secure: false,        // disable secure locally for testing
+      secure: process.env.NODE_ENV === "production",
+      // secure: false,        // disable secure locally for testing
       sameSite: "strict",
       maxAge: refreshTokenMaxAge
     });
